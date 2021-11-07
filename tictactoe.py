@@ -166,7 +166,7 @@ class GameBoard:
         self.winning_sets = winning_sets(dim, n)
 
     def flatten_obs(self):
-        (self.turn, self.dim, self.n, self.winner, self.over, tuple(sorted(list(self.moves))), self.iboard)
+        [self.turn, self.iboard]+sorted(list(self.moves))
 
     def show_board(self, silly=True):
         if self.dim == 1:
@@ -192,6 +192,10 @@ class GameBoard:
         return
 
     def move(self, m0, shush=False):
+        if m0 == None:
+            self.turn = 3-self.turn
+        if isinstance(m0, type(42)):
+            m0 = index(m0, self.dim, self.n)
         if not shush:
             print("Player "+str(self.turn)+" is making a move, the result of that move is")
         assert (len(m0) == self.dim), "INVALID MOVE: dimension mismatch"

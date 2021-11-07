@@ -9,11 +9,12 @@ from rlglue.types import Observation
 import tictactoe as ttt
 
 
+PLAYER = 1
+
+
 class tictactoe_agent(Agent):
-    lastAction = Action() # Will be something like the index for a move
-    lastObservation = Observation() # Will be something like the gamestate
-    # With available moves, the gameboard and which turn it is
-    player = 0  # Needs to be set to either 1 or 2
+    lastAction = Action()  #
+    lastObservation = Observation()  #
     randGenerator = random.Random()
     stepsize = 0.1
     epsilon = 0.1
@@ -21,14 +22,14 @@ class tictactoe_agent(Agent):
     numStates = 0
     numActions = 0
     value_function = None
+    player = PLAYER
 
     policyFrozen = False
     exploringFrozen = False
 
-    def agent_init(self, taskSpec):
+    def agent_init(self):
         self.lastAction = Action()
         self.lastObservation = Observation()
-        self.player = taskSpec.player
 
     def egreedy(self, state):
         numActions = len(state[0])
@@ -37,12 +38,12 @@ class tictactoe_agent(Agent):
         return self.value_function[state].index(max(self.value_function[state]))
 
     def agent_start(self, observation):
-        moves = observation.intArray[0][5]
-        turn = observation.intArray[0][0]
-        board = observation.intArray[0][6]
+        moves = observation.intArray[2:]
+        turn = observation.intArray[0]
+        board = observation.intArray[1]
         assert self.player == turn, "It needs to be this agent's turn for it to make a move"
-        theState = (moves, board, self.player, turn)
-        thisIntAction = self.egreedy(theState)
+        theState = (moves, board, turn, self.player)
+        thisIntAction: int = self.egreedy(theState)
         returnAction = Action()
         returnAction.intArray = [thisIntAction]
 
@@ -51,13 +52,13 @@ class tictactoe_agent(Agent):
 
         return returnAction
 
-    def agent_step(self, reward, observation):
-        moves = observation.intArray[0][5]
-        turn = observation.intArray[0][0]
-        board = observation.intArray[0][6]
-        newState = (moves, board, turn, self.player)
-        lastState = (self.lastObservation.moves, self.lastObservation.board,
-                     self.lastObservation.player, self.player)
+    def agent_step(self, reward, observation: Observation):
+        moves = observation.intArray[2:]
+        turn = observation.intArray[0]
+        board = observation.intArray[1]
+        newState = (tuple(moves), board, turn, self.player)
+        lastState = (tuple(self.lastObservation.intArray[2:]), self.lastObservation.intArray[1],
+                     self.lastObservation.intArray[0], self.player)
         lastAction = self.lastAction.intArray[0]
         newIntAction = self.egreedy(newState)
         Q_sa = self.value_function[lastState][lastAction]
@@ -73,9 +74,9 @@ class tictactoe_agent(Agent):
         return returnAction
 
     def agent_end(self, reward):
-        moves = self.lastObservation.intArray[0][5]
-        turn = self.lastObservation.intArray[0][0]
-        board = self.lastObservation.intArray[0][6]
+        moves = self.lastObservation.intArray[2:]
+        turn = self.lastObservation.intArray[0]
+        board = self.lastObservation.intArray[1]
         lastState = (moves, board,
                      turn, self.player)
         lastAction = self.lastAction.intArray[0]

@@ -7,7 +7,22 @@ from rlglue.types import Action
 from rlglue.types import Reward_observation_terminal
 import tictactoe
 
-class tictacttoe_environment(Environment):
+
+def env_agent(filename=None):
+    if filename is None:
+        return
+
+
+def random_move(observation: Observation):
+    moves = observation.intArray[2:]
+    l = len(moves)
+    if l == 0:
+        return
+    return random.randint(0, l-1)
+
+
+
+class tictactoe_environment(Environment):
     randGenerator = random.Random()
 
     def env_init(self, dim, n):
@@ -24,7 +39,8 @@ class tictacttoe_environment(Environment):
         assert len(thisAction.intArray) == 1, "Expected 1 action"
 
         self.updateBoard(thisAction.intArray[0])
-
+        self.GameBoard.move(random_move(self.GameBoard.flatten_obs()), shush=True)
+        # Have the environment make a move
         theObs = Observation()
         theObs.intArray = [self.GameBoard.flatten_obs()]
         returnRO = Reward_observation_terminal()
@@ -66,5 +82,5 @@ class tictacttoe_environment(Environment):
 
 
 if __name__ == '__main__':
-    EnvironmentLoader.loadEnvironment(tictacttoe_environment())
+    EnvironmentLoader.loadEnvironment(tictactoe_environment())
 
